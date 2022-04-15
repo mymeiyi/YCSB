@@ -280,12 +280,12 @@ public class KuduYCSBClient extends site.ycsb.DB {
 
   @Override
   public void cleanup() throws DBException {
-    try {
+    /*try {
       this.session.close();
       this.client.close();
     } catch (Exception e) {
       throw new DBException("Couldn't cleanup the session", e);
-    }
+    }*/
   }
 
   @Override
