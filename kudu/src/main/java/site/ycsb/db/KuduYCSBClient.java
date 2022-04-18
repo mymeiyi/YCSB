@@ -127,6 +127,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
     }
 
     try {
+      LOG.info("flush mode: " + session.getFlushMode());
       this.kuduTable = client.openTable(tableName);
       this.schema = kuduTable.getSchema();
     } catch (Exception e) {
