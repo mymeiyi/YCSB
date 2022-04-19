@@ -471,7 +471,8 @@ public class JdbcDBClient extends DB {
         // Normal update
         int result = insertStatement.executeUpdate();
         // If we are not autoCommit, we might have to commit now
-        if (!autoCommit) {
+        // TODO: skip commit now
+        /*if (!autoCommit) {
           // Let updates be batcher locally
           if (batchSize > 0) {
             if (++numRowsInBatch % batchSize == 0) {
@@ -484,7 +485,7 @@ public class JdbcDBClient extends DB {
             // Commit each update
             getShardConnectionByKey(key).commit();
           }
-        }
+        }*/
         if (result == 1) {
           return Status.OK;
         }
