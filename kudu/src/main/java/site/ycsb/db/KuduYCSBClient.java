@@ -152,6 +152,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
       String masterAddresses = prop.getProperty(MASTER_ADDRESSES_OPT,
                                                 "localhost:7051");
       updateType = prop.getProperty(UPDATE_TYPE, "update");
+      LOG.info("get update type is: " + updateType);
       LOG.debug("Connecting to the masters at {}", masterAddresses);
 
       int numClients = getIntFromProp(prop, NUM_CLIENTS_OPT, DEFAULT_NUM_CLIENTS);
