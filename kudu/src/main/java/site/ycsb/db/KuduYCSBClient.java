@@ -87,6 +87,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
   private static final String MASTER_ADDRESSES_OPT = "kudu_master_addresses";
   private static final String NUM_CLIENTS_OPT = "kudu_num_clients";
   private static final String PARTITION_SCHEMA_OPT = "kudu_partition_schema";
+  private static final String UPDATE_TYPE = "updateType"; // delete, upsert
 
   private static final int BLOCK_SIZE_DEFAULT = 4096;
   private static final int BUFFER_NUM_OPS_DEFAULT = 2000;
@@ -103,6 +104,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
   private String partitionSchema;
   private int zeropadding;
   private boolean orderedinserts;
+  private String updateType;
 
   @Override
   public void init() throws DBException {
@@ -149,6 +151,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
 
       String masterAddresses = prop.getProperty(MASTER_ADDRESSES_OPT,
                                                 "localhost:7051");
+      updateType = prop.getProperty(UPDATE_TYPE, "update");
       LOG.debug("Connecting to the masters at {}", masterAddresses);
 
       int numClients = getIntFromProp(prop, NUM_CLIENTS_OPT, DEFAULT_NUM_CLIENTS);
@@ -373,6 +376,16 @@ public class KuduYCSBClient extends site.ycsb.DB {
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
+    if (updateType.equals("update")) {
+      return updateInner(table, key, values);
+    } else if (updateType.equals("delete")) {
+      return delete(table, key);
+    } else {
+      return upsertInner(table, key, values);
+    }
+  }
+
+  private Status updateInner(String table, String key, Map<String, ByteIterator> values) {
     Update update = this.kuduTable.newUpdate();
     PartialRow row = update.getRow();
     row.addString(KEY, key);
@@ -384,6 +397,24 @@ public class KuduYCSBClient extends site.ycsb.DB {
       }
     }
     if (apply(update)) {
+      return Status.OK;
+    } else {
+      return Status.ERROR;
+    }
+  }
+
+  private Status upsertInner(String table, String key, Map<String, ByteIterator> values) {
+    Upsert upsert = this.kuduTable.newUpsert();
+    PartialRow row = upsert.getRow();
+    row.addString(KEY, key);
+    for (int i = 1; i < schema.getColumnCount(); i++) {
+      String columnName = schema.getColumnByIndex(i).getName();
+      ByteIterator b = values.get(columnName);
+      if (b != null) {
+        row.addStringUtf8(columnName, b.toArray());
+      }
+    }
+    if (apply(upsert)) {
       return Status.OK;
     } else {
       return Status.ERROR;
