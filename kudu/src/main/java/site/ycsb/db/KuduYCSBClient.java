@@ -87,7 +87,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
   private static final String MASTER_ADDRESSES_OPT = "kudu_master_addresses";
   private static final String NUM_CLIENTS_OPT = "kudu_num_clients";
   private static final String PARTITION_SCHEMA_OPT = "kudu_partition_schema";
-  private static final String UPDATE_TYPE = "updateType"; // delete, upsert
+  // private static final String UPDATE_TYPE = "updateType"; // delete, upsert
 
   private static final int BLOCK_SIZE_DEFAULT = 4096;
   private static final int BUFFER_NUM_OPS_DEFAULT = 2000;
@@ -104,7 +104,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
   private String partitionSchema;
   private int zeropadding;
   private boolean orderedinserts;
-  private String updateType;
+  // private String updateType;
 
   @Override
   public void init() throws DBException {
@@ -117,8 +117,8 @@ public class KuduYCSBClient extends site.ycsb.DB {
     } else {
       this.orderedinserts = true;
     }
-    updateType = prop.getProperty(UPDATE_TYPE, "update");
-    LOG.info("get update type is: " + updateType);
+    /*updateType = prop.getProperty(UPDATE_TYPE, "update");
+    LOG.info("get update type is: " + updateType);*/
     initClient();
     this.session = client.newSession();
     if (getProperties().getProperty(SYNC_OPS_OPT) != null

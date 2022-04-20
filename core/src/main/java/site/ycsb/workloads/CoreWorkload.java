@@ -903,11 +903,11 @@ public class CoreWorkload extends Workload {
     final double readproportion = Double.parseDouble(
         p.getProperty(READ_PROPORTION_PROPERTY, READ_PROPORTION_PROPERTY_DEFAULT));
     final double updateproportion = Double.parseDouble(
-        p.getProperty(UPDATE_PROPORTION_PROPERTY, DELETE_PROPORTION_PROPERTY_DEFAULT));
+        p.getProperty(UPDATE_PROPORTION_PROPERTY, UPSERT_PROPORTION_PROPERTY_DEFAULT));
     final double deleteproportion = Double.parseDouble(
-        p.getProperty(UPSERT_PROPORTION_PROPERTY, UPSERT_PROPORTION_PROPERTY_DEFAULT));
+        p.getProperty(DELETE_PROPORTION_PROPERTY, DELETE_PROPORTION_PROPERTY_DEFAULT));
     final double upsertproportion = Double.parseDouble(
-        p.getProperty(UPDATE_PROPORTION_PROPERTY, UPDATE_PROPORTION_PROPERTY_DEFAULT));
+        p.getProperty(UPSERT_PROPORTION_PROPERTY, UPSERT_PROPORTION_PROPERTY_DEFAULT));
     final double insertproportion = Double.parseDouble(
         p.getProperty(INSERT_PROPORTION_PROPERTY, INSERT_PROPORTION_PROPERTY_DEFAULT));
     final double scanproportion = Double.parseDouble(
