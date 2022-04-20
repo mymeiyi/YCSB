@@ -412,7 +412,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
     try {
       OperationResponse response = session.apply(op);
       if (response != null && response.hasRowError()) {
-        LOG.info("Write operation failed: {}", response.getRowError());
+        LOG.info("{} operation failed: {}", op.getClass().getSimpleName(), response.getRowError());
       }
     } catch (KuduException ex) {
       LOG.warn("Write operation failed", ex);
