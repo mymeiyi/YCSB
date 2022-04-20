@@ -124,6 +124,10 @@ public abstract class DB {
    */
   public abstract Status insert(String table, String key, Map<String, ByteIterator> values);
 
+  public Status upsert(String table, String key, Map<String, ByteIterator> values) {
+    return Status.FORBIDDEN;
+  }
+
   /**
    * Delete a record from the database.
    *

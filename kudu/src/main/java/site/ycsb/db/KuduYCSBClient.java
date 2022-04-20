@@ -377,7 +377,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
 
   @Override
   public Status update(String table, String key, Map<String, ByteIterator> values) {
-    if (updateType.equals("update")) {
+    /*if (updateType.equals("update")) {
       return updateInner(table, key, values);
     } else if (updateType.equals("delete")) {
       return delete(table, key);
@@ -386,7 +386,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
     }
   }
 
-  private Status updateInner(String table, String key, Map<String, ByteIterator> values) {
+  private Status updateInner(String table, String key, Map<String, ByteIterator> values) {*/
     Update update = this.kuduTable.newUpdate();
     PartialRow row = update.getRow();
     row.addString(KEY, key);
@@ -404,7 +404,8 @@ public class KuduYCSBClient extends site.ycsb.DB {
     }
   }
 
-  private Status upsertInner(String table, String key, Map<String, ByteIterator> values) {
+  @Override
+  public Status upsert(String table, String key, Map<String, ByteIterator> values) {
     Upsert upsert = this.kuduTable.newUpsert();
     PartialRow row = upsert.getRow();
     row.addString(KEY, key);

@@ -214,11 +214,15 @@ public class CoreWorkload extends Workload {
    * The name of the property for the proportion of transactions that are updates.
    */
   public static final String UPDATE_PROPORTION_PROPERTY = "updateproportion";
+  public static final String DELETE_PROPORTION_PROPERTY = "deleteproportion";
+  public static final String UPSERT_PROPORTION_PROPERTY = "upsertproportion";
 
   /**
    * The default proportion of transactions that are updates.
    */
   public static final String UPDATE_PROPORTION_PROPERTY_DEFAULT = "0.05";
+  public static final String DELETE_PROPORTION_PROPERTY_DEFAULT = "0";
+  public static final String UPSERT_PROPORTION_PROPERTY_DEFAULT = "0";
 
   /**
    * The name of the property for the proportion of transactions that are inserts.
@@ -669,9 +673,17 @@ public class CoreWorkload extends Workload {
     case "INSERT":
       doTransactionInsert(db);
       break;
+    case "DELETE":
+      doTransactionDelete(db);
+      break;
+    case "UPSERT":
+      doTransactionUpsert(db);
+      break;
     case "SCAN":
       doTransactionScan(db);
       break;
+
+
     default:
       doTransactionReadModifyWrite(db);
     }
@@ -848,6 +860,32 @@ public class CoreWorkload extends Workload {
     }
   }
 
+  public void doTransactionUpsert(DB db) {
+    // choose the next key
+    long keynum = transactioninsertkeysequence.nextValue();
+
+    try {
+      String dbkey = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+      HashMap<String, ByteIterator> values = buildValues(dbkey);
+      db.upsert(table, dbkey, values);
+    } finally {
+      transactioninsertkeysequence.acknowledge(keynum);
+    }
+  }
+
+  public void doTransactionDelete(DB db) {
+    // choose the next key
+    long keynum = transactioninsertkeysequence.nextValue();
+
+    try {
+      String dbkey = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+      db.delete(table, dbkey);
+    } finally {
+      transactioninsertkeysequence.acknowledge(keynum);
+    }
+  }
+
   /**
    * Creates a weighted discrete values with database operations for a workload to perform.
    * Weights/proportions are read from the properties list and defaults are used
@@ -865,6 +903,10 @@ public class CoreWorkload extends Workload {
     final double readproportion = Double.parseDouble(
         p.getProperty(READ_PROPORTION_PROPERTY, READ_PROPORTION_PROPERTY_DEFAULT));
     final double updateproportion = Double.parseDouble(
+        p.getProperty(UPDATE_PROPORTION_PROPERTY, DELETE_PROPORTION_PROPERTY_DEFAULT));
+    final double deleteproportion = Double.parseDouble(
+        p.getProperty(UPSERT_PROPORTION_PROPERTY, UPSERT_PROPORTION_PROPERTY_DEFAULT));
+    final double upsertproportion = Double.parseDouble(
         p.getProperty(UPDATE_PROPORTION_PROPERTY, UPDATE_PROPORTION_PROPERTY_DEFAULT));
     final double insertproportion = Double.parseDouble(
         p.getProperty(INSERT_PROPORTION_PROPERTY, INSERT_PROPORTION_PROPERTY_DEFAULT));
@@ -873,6 +915,7 @@ public class CoreWorkload extends Workload {
     final double readmodifywriteproportion = Double.parseDouble(p.getProperty(
         READMODIFYWRITE_PROPORTION_PROPERTY, READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT));
 
+
     final DiscreteGenerator operationchooser = new DiscreteGenerator();
     if (readproportion > 0) {
       operationchooser.addValue(readproportion, "READ");
@@ -880,6 +923,12 @@ public class CoreWorkload extends Workload {
 
     if (updateproportion > 0) {
       operationchooser.addValue(updateproportion, "UPDATE");
+    }
+    if (deleteproportion > 0) {
+      operationchooser.addValue(deleteproportion, "DELETE");
+    }
+    if (upsertproportion > 0) {
+      operationchooser.addValue(upsertproportion, "UPSERT");
     }
 
     if (insertproportion > 0) {
@@ -893,6 +942,7 @@ public class CoreWorkload extends Workload {
     if (readmodifywriteproportion > 0) {
       operationchooser.addValue(readmodifywriteproportion, "READMODIFYWRITE");
     }
+
     return operationchooser;
   }
 }
