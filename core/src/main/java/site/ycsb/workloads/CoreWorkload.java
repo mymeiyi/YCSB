@@ -670,14 +670,14 @@ public class CoreWorkload extends Workload {
     case "UPDATE":
       doTransactionUpdate(db);
       break;
-    case "INSERT":
-      doTransactionInsert(db);
-      break;
     case "DELETE":
       doTransactionDelete(db);
       break;
     case "UPSERT":
       doTransactionUpsert(db);
+      break;
+    case "INSERT":
+      doTransactionInsert(db);
       break;
     case "SCAN":
       doTransactionScan(db);
@@ -846,6 +846,33 @@ public class CoreWorkload extends Workload {
     db.update(table, keyname, values);
   }
 
+
+  public void doTransactionUpsert(DB db) {
+    // choose a random key
+    long keynum = nextKeynum();
+
+    String keyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+    HashMap<String, ByteIterator> values;
+
+    if (writeallfields) {
+      // new data for all the fields
+      values = buildValues(keyname);
+    } else {
+      // update a random field
+      values = buildSingleValue(keyname);
+    }
+
+    db.upsert(table, keyname, values);
+  }
+
+  public void doTransactionDelete(DB db) {
+    // choose a random key
+    long keynum = nextKeynum();
+    String keyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+    db.delete(table, keyname);
+  }
+
   public void doTransactionInsert(DB db) {
     // choose the next key
     long keynum = transactioninsertkeysequence.nextValue();
@@ -855,32 +882,6 @@ public class CoreWorkload extends Workload {
 
       HashMap<String, ByteIterator> values = buildValues(dbkey);
       db.insert(table, dbkey, values);
-    } finally {
-      transactioninsertkeysequence.acknowledge(keynum);
-    }
-  }
-
-  public void doTransactionUpsert(DB db) {
-    // choose the next key
-    long keynum = transactioninsertkeysequence.nextValue();
-
-    try {
-      String dbkey = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
-
-      HashMap<String, ByteIterator> values = buildValues(dbkey);
-      db.upsert(table, dbkey, values);
-    } finally {
-      transactioninsertkeysequence.acknowledge(keynum);
-    }
-  }
-
-  public void doTransactionDelete(DB db) {
-    // choose the next key
-    long keynum = transactioninsertkeysequence.nextValue();
-
-    try {
-      String dbkey = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
-      db.delete(table, dbkey);
     } finally {
       transactioninsertkeysequence.acknowledge(keynum);
     }
