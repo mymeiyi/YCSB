@@ -664,25 +664,24 @@ public class CoreWorkload extends Workload {
     }
 
     switch (operation) {
+    case "INSERT":
+      doTransactionInsert(db);
+      break;
     case "READ":
       doTransactionRead(db);
       break;
     case "UPDATE":
       doTransactionUpdate(db);
       break;
-    case "DELETE":
-      doTransactionDelete(db);
-      break;
     case "UPSERT":
       doTransactionUpsert(db);
       break;
-    case "INSERT":
-      doTransactionInsert(db);
+    case "DELETE":
+      doTransactionDelete(db);
       break;
     case "SCAN":
       doTransactionScan(db);
       break;
-
 
     default:
       doTransactionReadModifyWrite(db);
@@ -922,6 +921,9 @@ public class CoreWorkload extends Workload {
       operationchooser.addValue(readproportion, "READ");
     }
 
+    if (insertproportion > 0) {
+      operationchooser.addValue(insertproportion, "INSERT");
+    }
     if (updateproportion > 0) {
       operationchooser.addValue(updateproportion, "UPDATE");
     }
@@ -930,10 +932,6 @@ public class CoreWorkload extends Workload {
     }
     if (upsertproportion > 0) {
       operationchooser.addValue(upsertproportion, "UPSERT");
-    }
-
-    if (insertproportion > 0) {
-      operationchooser.addValue(insertproportion, "INSERT");
     }
 
     if (scanproportion > 0) {
