@@ -52,6 +52,7 @@ public class DBWrapper extends DB {
   private final String scopeStringRead;
   private final String scopeStringScan;
   private final String scopeStringUpdate;
+  private final String scopeStringUpsert;
 
   public DBWrapper(final DB db, final Tracer tracer) {
     this.db = db;
@@ -65,6 +66,7 @@ public class DBWrapper extends DB {
     scopeStringRead = simple + "#read";
     scopeStringScan = simple + "#scan";
     scopeStringUpdate = simple + "#update";
+    scopeStringUpsert = simple + "#upsert";
   }
 
   /**
@@ -247,6 +249,19 @@ public class DBWrapper extends DB {
       long en = System.nanoTime();
       measure("DELETE", res, ist, st, en);
       measurements.reportStatus("DELETE", res);
+      return res;
+    }
+  }
+
+  public Status upsert(String table, String key,
+                       Map<String, ByteIterator> values) {
+    try (final TraceScope span = tracer.newScope(scopeStringUpsert)) {
+      long ist = measurements.getIntendedStartTimeNs();
+      long st = System.nanoTime();
+      Status res = db.upsert(table, key, values);
+      long en = System.nanoTime();
+      measure("UPSERT", res, ist, st, en);
+      measurements.reportStatus("UPSERT", res);
       return res;
     }
   }
