@@ -451,7 +451,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
       }
       return true;
     } catch (KuduException ex) {
-      LOG.warn("Write operation failed", ex);
+      LOG.warn("{} operation failed", op.getClass().getSimpleName(), ex);
       return false;
     }
   }
