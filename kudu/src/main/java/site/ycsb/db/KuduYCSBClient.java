@@ -383,8 +383,11 @@ public class KuduYCSBClient extends site.ycsb.DB {
         row.addStringUtf8(columnName, b.toArray());
       }
     }
-    apply(update);
-    return Status.OK;
+    if (apply(update)) {
+      return Status.OK;
+    } else {
+      return Status.ERROR;
+    }
   }
 
   @Override
@@ -395,8 +398,7 @@ public class KuduYCSBClient extends site.ycsb.DB {
     for (int i = 1; i < schema.getColumnCount(); i++) {
       row.addStringUtf8(i, values.get(schema.getColumnByIndex(i).getName()).toArray());
     }
-    apply(insert);
-    return Status.OK;
+    return apply(insert) ? Status.OK : Status.ERROR;
   }
 
   @Override
@@ -404,18 +406,20 @@ public class KuduYCSBClient extends site.ycsb.DB {
     Delete delete = this.kuduTable.newDelete();
     PartialRow row = delete.getRow();
     row.addString(KEY, key);
-    apply(delete);
-    return Status.OK;
+    return apply(delete)? Status.OK: Status.ERROR;
   }
 
-  private void apply(Operation op) {
+  private boolean apply(Operation op) {
     try {
       OperationResponse response = session.apply(op);
       if (response != null && response.hasRowError()) {
         LOG.info("{} operation failed: {}", op.getClass().getSimpleName(), response.getRowError());
+        return false;
       }
+      return true;
     } catch (KuduException ex) {
       LOG.warn("Write operation failed", ex);
+      return false;
     }
   }
 }
