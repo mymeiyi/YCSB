@@ -847,22 +847,17 @@ public class CoreWorkload extends Workload {
 
 
   public void doTransactionUpsert(DB db) {
-    // choose a random key
-    long keynum = nextKeynum();
+    // choose the next key
+    long keynum = transactioninsertkeysequence.nextValue();
 
-    String keyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+    try {
+      String dbkey = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
 
-    HashMap<String, ByteIterator> values;
-
-    if (writeallfields) {
-      // new data for all the fields
-      values = buildValues(keyname);
-    } else {
-      // update a random field
-      values = buildSingleValue(keyname);
+      HashMap<String, ByteIterator> values = buildValues(dbkey);
+      db.upsert(table, dbkey, values);
+    } finally {
+      transactioninsertkeysequence.acknowledge(keynum);
     }
-
-    db.upsert(table, keyname, values);
   }
 
   public void doTransactionDelete(DB db) {
